@@ -6,3 +6,4 @@ google-auth-httplib2
 gspread
 openai
 requests
+python-dotenv
