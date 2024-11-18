@@ -41,7 +41,7 @@
         {{ preview | safe }}
         <hr>
         <h3 class="mt-4">Dynamic Query Input</h3>
-        <form action="{{ url_for('routes.process_query') }}" method="post">
+        <form method="POST" action="{{ url_for('routes.process_query') }}">
             <div class="mb-3">
                 <label for="query" class="form-label">Enter your query</label>
                 <textarea class="form-control" name="query" id="query" rows="3" placeholder="Enter a query (e.g., 'Select top 10 rows')"></textarea>
