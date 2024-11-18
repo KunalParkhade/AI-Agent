@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Upload CSV File</h1>
+    <form action="/" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv">
+        <button type="submit">Upload</button>
+    </form>
+    {% if preview %}
+        <h2>Preview</h2>
+        <div>{{ preview | safe }}</div>
+        <h3>Select column</h3>
+        <form action="/process" method="post">
+            <select name="main_column">
+                {% for column in columns %}
+                    <option value="{{ column }}">{{ column }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Next</button>
+        </form>
+    {% endif %}
+</body>
+</html>
