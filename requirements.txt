@@ -7,3 +7,4 @@ gspread
 openai
 requests
 python-dotenv
+requests

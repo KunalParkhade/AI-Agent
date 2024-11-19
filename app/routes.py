@@ -4,6 +4,9 @@ import os
 from app.utils.google_sheets import connect_to_google_sheets
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
+import requests
+
+from app.utils.search_api import search_bing
 
 load_dotenv(dotenv_path=os.path.join(os.getcwd(), 'app', 'config', '.env'))
 
@@ -90,6 +93,11 @@ def process_query():
     global data
     query = request.form.get('query')
     
+    # Ensure data is loaded
+    if data is None:
+        flash("No data available. Please upload a file or connect to Google Sheets first.")
+        return redirect(url_for('routes.upload_file'))
+
     if not query:
         flash("Please enter a query.")
         return redirect(url_for('routes.upload_file'))
@@ -125,3 +133,53 @@ def process_query():
     except Exception as e:
         flash(f"Error processing query: {e}")
         return redirect(url_for('routes.upload_file'))
+
+
+@routes.route('/web_search', methods=['GET', 'POST'])
+def web_search():
+    if request.method == 'POST':
+        query = request.form.get('query')
+        if not query:
+            flash("Please enter a search query.")
+            return redirect(request.url)
+        
+        try:
+            # Call the Bing API with the search query
+            search_results = search_bing(query)
+
+            # Extract relevant search result information
+            web_pages = search_results.get('webPages', {}).get('value', [])
+            return render_template('web_search.html', query=query, web_pages=web_pages)
+        except Exception as e:
+            flash(f"Error performing search: {e}")
+            return redirect(request.url)
+        
+    return render_template('web_search.html')
+    
+    # query = request.form.get('search_query')
+
+    # if not query:
+    #     flash("Please enter a search query.")
+    #     return render_template('upload.html', search_results=None, preview=None)
+    
+    # try:
+    #     # Using Bing Search API
+    #     api_key = os.getenv('BING_API_KEY')
+    #     endpoint = "https://api.bing.microsoft.com/v7.0/search"
+    #     headers = {"Ocp-Apim-Subscription-Key": api_key}
+    #     params = {"q": query, "count": 10}
+
+    #     response = requests.get(endpoint, headers=headers, params=params)
+    #     response.raise_for_status()
+    #     search_results = response.json()
+
+    #     # Extract relevant data
+    #     results = []
+    #     for result in search_results.get('webPages', {}).get('value', []):
+    #         results.append({"name": result["name"], "url": result["url"], "snippet": result["snippet"]})
+
+    #     return render_template('upload.html', search_results=results, preview=None)
+    
+    # except Exception as e:
+    #     flash(f"Error during web search: {e}")
+    #     return render_template('upload.html', search_results=None, preview=None)
