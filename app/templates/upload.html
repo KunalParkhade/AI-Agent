@@ -6,7 +6,7 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Upload CSV or Connect Google Sheets</h1>
+        <h1 class="mb-4">Upload CSV or Connect Google Sheets</h1>
         
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages() %}
@@ -15,39 +15,74 @@
           {% endif %}
         {% endwith %}
 
-        <!-- CSV Upload -->
-        <form method="POST" enctype="multipart/form-data" action="{{ url_for('routes.upload_file') }}">
-            <div class="mb-3">
-                <label for="file" class="form-label">Upload CSV File</label>
-                <input type="file" class="form-control" name="file" id="file">
+        <!-- CSV Upload Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Upload a CSV File</h5>
             </div>
-            <button type="submit" class="btn btn-primary">Upload</button>
-        </form>
-
-        <hr>
-
-        <!-- Google Sheets -->
-        <form method="POST" action="{{ url_for('routes.upload_file') }}">
-            <div class="mb-3">
-                <label for="sheet_id" class="form-label">Google Sheet ID</label>
-                <input type="text" class="form-control" name="sheet_id" id="sheet_id" placeholder="Enter Google Sheet ID">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" action="{{ url_for('routes.upload_file') }}">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Choose CSV File</label>
+                        <input type="file" class="form-control" name="file" id="file">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
             </div>
-            <button type="submit" class="btn btn-primary">Connect</button>
-        </form>
+        </div>
 
-        <!-- Preview -->
+        <!-- Google Sheets Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Connect to Google Sheets</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('routes.upload_file') }}">
+                    <div class="mb-3">
+                        <label for="sheet_id" class="form-label">Google Sheet ID</label>
+                        <input type="text" class="form-control" name="sheet_id" id="sheet_id" placeholder="Enter Google Sheet ID">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Connect</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
         {% if preview %}
-        <h3 class="mt-4">Preview</h3>
-        {{ preview | safe }}
-        <hr>
-        <h3 class="mt-4">Dynamic Query Input</h3>
-        <form method="POST" action="{{ url_for('routes.process_query') }}">
-            <div class="mb-3">
-                <label for="query" class="form-label">Enter your query</label>
-                <textarea class="form-control" name="query" id="query" rows="3" placeholder="Enter a query (e.g., 'Select top 10 rows')"></textarea>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Data Preview</h5>
             </div>
-            <button type="submit" class="btn btn-primary">Run Query</button>
-        </form>
+            <div class="card-body">
+                {{ preview | safe }}
+            </div>
+        </div>
+
+        <!-- Query Input Section -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Run Dynamic Query</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('routes.process_query') }}">
+                    <div class="mb-3">
+                        <label for="query" class="form-label">Enter Your Query</label>
+                        <textarea class="form-control" name="query" id="query" rows="3" placeholder="Enter a query (e.g., 'Select top 10 rows')"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Run Query</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Query Examples -->
+        <div class="alert alert-info mt-4">
+            <h5>Query Examples:</h5>
+            <ul>
+                <li><strong>Select Top 10 Rows:</strong> <code>select top 10 rows</code></li>
+                <li><strong>Filter Rows:</strong> <code>filter age &gt; 30</code></li>
+                <li><strong>Select Columns:</strong> <code>select columns name, age</code></li>
+            </ul>
+        </div>
         {% endif %}
     </div>
 </body>

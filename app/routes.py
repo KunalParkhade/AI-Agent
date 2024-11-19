@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import pandas as pd
 import os
 from app.utils.google_sheets import connect_to_google_sheets
@@ -32,6 +32,9 @@ def upload_file():
             if file and allowed_file(file.filename):
                 filepath = os.path.join(UPLOAD_FOLDER, file.filename)
                 file.save(filepath)
+
+                # Stores the file path in session
+                session['uploaded_file_path'] = filepath
 
                 # Load and preview CSV
                 data = pd.read_csv(filepath)
@@ -67,6 +70,18 @@ def upload_file():
         else:
             flash("Please either upload a CSV file or provide a Google Sheet ID.")
             return redirect(request.url)
+        
+    #If no POST request, check if a file is already uploaded
+    uploaded_file_path = session.get('uploaded_file_path', None)
+    if uploaded_file_path:
+        try:
+            # Load and preview the existing CSV
+            df = pd.read_csv(uploaded_file_path)
+            preview = df.head().to_html(classes='table table-bordered')
+            return render_template('upload.html', preview=preview, columns=df.columns.tolist())
+        except Exception as e:
+            flash(f"Error loading existing file: {e}")
+            session.pop('uploaded_file_path', None)
     
     return render_template('upload.html')
 
@@ -83,15 +98,28 @@ def process_query():
         # Simple example of processing queries
         if query.lower() == 'select top 10 rows':
             result = data.head(10)
+        elif query.lower().startswith('filter'):
+            # Example: "filter age > 30"
+            condition = query[7:].strip()
+            result = data.query(condition)
+        elif query.lower().startswith('select columns'):
+            # Example: "select columns name, age"
+            columns = query[15:].strip().split(",")
+            result = data[columns]
         else:
             # Dynamic query processing based on the string (you can extend this logic)
             result = data.query(query)
 
-        # Ensure the result is a DataFRame
+        # IF result is in pandas Series -->
         if isinstance(result, pd.Series):
-            result = result.to_frame()  
+            result = result.to_frame() 
+
+        # Ensure result in pandas DataFrame
+        if isinstance(result, pd.DataFrame):
+            preview = result.to_html(classes='table table-bordered')
+        else:
+            raise ValueError("The result of the query is not a valid DataFrame or Series.")
         
-        preview = result.to_html(classes='table table-bordered')
         return render_template('upload.html', preview=preview, columns=data.columns.tolist())
 
     except Exception as e:
